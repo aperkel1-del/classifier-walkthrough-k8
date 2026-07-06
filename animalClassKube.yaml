@@ -6,10 +6,10 @@ metadata:
 spec:
   template:
     spec:
-      restartPolicy: OnFailure
-      runtimeClassName: habana
+      restartPolicy: OnFailure 
+      runtimeClassName: habana #gives access to HPUs
       volumes:
-        - name: dshm
+        - name: dshm #volume allocates memory for more workers during training
           emptyDir:
             medium: Memory
             sizeLimit: 4Gi
@@ -18,26 +18,23 @@ spec:
           volumeMounts:
            - mountPath: /dev/shm
              name: dshm
-          image: 'vault.habana.ai/gaudi-docker/1.24.0/ubuntu24.04/habanalabs/pytorch-installer-2.10.0'
+          image: 'vault.habana.ai/gaudi-docker/1.24.0/ubuntu24.04/habanalabs/pytorch-installer-2.10.0' #pulls image from intel
           command: ["/bin/sh", "-c"]
           args: 
             - >-
               apt-get update && apt-get install -y git unzip &&
               pip install kaggle &&
-              git clone https://github.com/aperkel1-del/animal-class-k8s.git /workspace &&
-              kaggle datasets download likhon148/animal-data -p /data &&
-              ls /data &&
+              git clone https://github.com/aperkel1-del/classifier-walkthrough-k8.git /workspace && #clones github repo for python script
+              kaggle datasets download likhon148/animal-data -p /data && #download dataset from kaggle
               unzip /data/animal-data.zip -d /data &&
-              for i in 1 2 3 4 5 6 7 8 9 10; do
-                python /workspace/animalClassifierK8.py
-              done &&
-              sleep 1800
+                python /workspace/animalClassifierK8.py #run python script
+              sleep 1800 #after complete, pod sits idly for 30min to pull model and any benchmark
           env:
-            - name: HABANA_LOGS
+            - name: HABANA_LOGS #directory where Habana runtime/profiling logs get written inside the container
               value: "/workspace/habana_logs"
-            - name: PT_HPU_LAZY_MODE
+            - name: PT_HPU_LAZY_MODE # enables lazy execution mode on HPU (vs eager)
               value: "1"
-            - name: KAGGLE_USERNAME
+            - name: KAGGLE_USERNAME #kaggle credentials to pull dataset
               valueFrom:
                 secretKeyRef:
                   name: kaggle-credentials
@@ -47,7 +44,7 @@ spec:
                 secretKeyRef:
                   name: kaggle-credentials
                   key: KAGGLE_KEY
-          resources:
+          resources: #define hardware allocation
             limits:
               habana.ai/gaudi: "1"
               memory: "32Gi"
