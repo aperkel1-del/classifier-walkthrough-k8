@@ -46,7 +46,7 @@ print(f"Val images:   {len(val_dataset)}\n")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 #--- Load Pretrained Model ---
-model = models.resnet50(weights=None)
+model = models.resnet50(weights=models.ResNet50_Weights.IMAGENET1K_V2)
 model.fc = nn.Linear(model.fc.in_features, num_classes)
 model = model.to(device)
 htcore.mark_step()
