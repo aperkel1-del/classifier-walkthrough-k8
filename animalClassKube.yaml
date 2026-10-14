@@ -24,11 +24,11 @@ spec:
             - >-
               apt-get update && apt-get install -y git unzip &&
               pip install kaggle &&
-              git clone https://github.com/aperkel1-del/classifier-walkthrough-k8.git /workspace && #clones github repo for python script
-              kaggle datasets download likhon148/animal-data -p /data && #download dataset from kaggle
+              git clone https://github.com/aperkel1-del/classifier-walkthrough-k8.git /workspace &&
+              kaggle datasets download likhon148/animal-data -p /data &&
               unzip /data/animal-data.zip -d /data &&
-                python /workspace/animalClassifierK8.py #run python script
-              sleep 1800 #after complete, pod sits idly for 30min to pull model and any benchmark
+                python /workspace/animalClassifierK8.py
+              sleep 1800
           env:
             - name: HABANA_LOGS #directory where Habana runtime/profiling logs get written inside the container
               value: "/workspace/habana_logs"
